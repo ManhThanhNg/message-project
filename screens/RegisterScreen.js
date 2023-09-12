@@ -8,6 +8,22 @@ const RegisterScreen = () => {
     const [fullName, setFullName] = useState("");
     const [image, setImage] = useState("");
     const navigation = useNavigation();
+    const handleRegister = ()=>{
+        const user = {
+            name: fullName,
+            email: email,
+            password: password,
+            image: image
+        }
+
+        //send a POST request to the backend API to register user
+        axios.post("http://localhost:8000/register", user).then((response)=>{
+            console.log(response.data);
+        }).catch((err)=>{
+            console.log(err);
+        }
+    }
+
     return (
         <View style={{
             flex: 1,
@@ -84,15 +100,17 @@ const RegisterScreen = () => {
                             placeholder="Image"/>
                     </View>
 
-                    <Pressable style={{
-                        width: 200,
-                        backgroundColor: "#4A55A2",
-                        padding: 15,
-                        marginTop: 50,
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                        borderRadius: 6
-                    }}>
+                    <Pressable
+                        onPress={handleRegister}
+                        style={{
+                            width: 200,
+                            backgroundColor: "#4A55A2",
+                            padding: 15,
+                            marginTop: 50,
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                            borderRadius: 6
+                        }}>
                         <Text style={{color: "white", fontWeight: "bold", textAlign: "center"}}>Register</Text>
                     </Pressable>
                     <Pressable
