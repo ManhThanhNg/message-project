@@ -31,3 +31,26 @@ mongoose.connect(process.env.DB_URI,
 app.listen(port, () => {
     console.log("Server listening on port " + port);
 }); // Tell express to listen on port
+
+const User = require('./api/models/user'); // Import the user model
+const Message = require('./api/models/message'); // Import the message model
+
+//endpoints for registeration of the user
+app.post("/register", (req, res) => {
+    const {name, email, password, image} = req.body; // Destructuring assignment
+
+    //CREATE NEW USER OBJECT
+    const newUser = new User({
+        name, email, password, image
+    })
+
+    //SAVE USER TO DATABASE
+    newUser.save((err,user) => {
+        if(err){
+            console.log(err);
+            res.status(500).send("Error registering new user please try again.");
+        }else{
+            res.status(200).send(user);
+        }
+    })
+}
