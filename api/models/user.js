@@ -17,17 +17,23 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    friendRequests:{
+    friendRequests: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    },
-    friends:{
+    }],
+    friends: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
+    sentFriendRequests: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    },
-    sentFriendRequests:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-
+    }],
+    sen
 });
+
+const User = mongoose.model("User",userSchema);
+
+module.exports = User;
