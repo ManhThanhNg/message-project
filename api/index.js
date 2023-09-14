@@ -13,6 +13,7 @@ app.use(cors()); // Use this after the variable declaration
 app.use(bodyParser.urlencoded({extended: false}));// Parses urlencoded bodies
 app.use(bodyParser.json()); // Body parser use JSON data
 app.use(passport.initialize()); // Used to initialize passport
+
 const jwt = require('jsonwebtoken');
 const {stringify} = require("nodemon/lib/utils"); // used to create, sign, and verify tokens
 
@@ -33,12 +34,12 @@ app.listen(port, () => {
 }); // Tell express to listen on port
 
 const User = require('./models/user'); // Import the user model
-const Message = require('./models/message.js'); // Import the message model
+const Message = require('./models/message'); // Import the message model
 
 //endpoints for registeration of the user
 app.post("/register", (req, res) => {
     const {name, email, password, image} = req.body; // Destructuring assignment
-
+    console.log(req.body);
     //CREATE NEW USER OBJECT
     const newUser = new User({
         name, email, password, image
@@ -46,6 +47,7 @@ app.post("/register", (req, res) => {
 
     //Save the user to the database
     newUser.save().then(()=>{
+        console.log("User created successfully");
         res.status(200).json({message: "User created successfully"});
     }).catch((err)=>{
         console.log("Error registering the User" + err);
