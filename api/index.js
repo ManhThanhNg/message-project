@@ -32,8 +32,8 @@ app.listen(port, () => {
     console.log("Server listening on port " + port);
 }); // Tell express to listen on port
 
-const User = require('./api/models/user.js'); // Import the user model
-const Message = require('./api/models/message.js'); // Import the message model
+const User = require('./models/user'); // Import the user model
+const Message = require('./models/message.js'); // Import the message model
 
 //endpoints for registeration of the user
 app.post("/register", (req, res) => {

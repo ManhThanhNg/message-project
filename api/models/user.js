@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    sen
+
 });
 
 const User = mongoose.model("User",userSchema);
