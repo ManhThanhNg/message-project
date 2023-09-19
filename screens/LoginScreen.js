@@ -1,11 +1,46 @@
-import {KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native'
-import React, {useState} from 'react'
+import {Alert, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native'
+import React, {useEffect, useState} from 'react'
 import {useNavigation} from "@react-navigation/native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigation = useNavigation();
+    useEffect(() => {
+        const checkLoginStatus = async () => {
+            try {
+                const token = await AsyncStorage.getItem("authToken");
+                if (token) {
+                    navigation.navigate("HomeScreen");
+                } else {
+                    // token not found, show the login screen
+                }
+            } catch (error) {
+                console.log("error:", error);
+            }
+        };
+        checkLoginStatus();
+    }, [])
+    const handleLogin = () => {
+        const user = {
+            "email": email,
+            "password": password,
+        }
+
+        axios.post("http://192.168.1.6:8000/login", user)
+            .then((response) => {
+            console.log(response);
+            const token = response.data.token;
+            AsyncStorage.setItem("authToken", token);
+
+            navigation.navigate("HomeScreen");
+        }).catch((error) => {
+            console.log(error);
+            Alert.alert("Registration Error", "An error occurred while registering. Please try again later.");
+        })
+    }
     return (<View style={{flex: 1, backgroundColor: 'white', padding: 10, alignItems: "center"}}>
             <KeyboardAvoidingView>
                 <View style={{marginTop: 100, alignItems: "center"}}>
@@ -49,15 +84,17 @@ const LoginScreen = () => {
                         <Text style={{color: '#4A55A2', fontSize: 17, fontWeight: "600", marginTop: 10}}>Forgot
                             Password?</Text>
                     </Pressable>
-                    <Pressable style={{
-                        width: 200,
-                        backgroundColor: "#4A55A2",
-                        padding: 15,
-                        marginTop: 50,
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                        borderRadius: 6
-                    }}>
+                    <Pressable
+                        onPress={handleLogin}
+                        style={{
+                            width: 200,
+                            backgroundColor: "#4A55A2",
+                            padding: 15,
+                            marginTop: 50,
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                            borderRadius: 6
+                        }}>
                         <Text style={{color: "white", fontWeight: "bold", textAlign: "center"}}>Login</Text>
                     </Pressable>
                     <Pressable
