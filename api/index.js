@@ -85,7 +85,7 @@ app.post("/login", (req, res) => {
 
         const token = createToken(user._id);
         try {
-            console.log("User "+ user.name+ " logged in successfully");
+            console.log("User " + user.name + " logged in successfully");
             res.status(200).json({token})
         } catch (err) {
             console.log("Error logging in the User" + err);
@@ -93,3 +93,50 @@ app.post("/login", (req, res) => {
         }
     });
 })
+
+//endpoint to access all the users except the user who's is currently logged in
+app.get("/user/:userId", (req, res) => {
+    const loggedInUserId = req.params.userId;
+    User.find({_id: {$ne: loggedInUserId}})
+        .then((users) => {
+            res.status(200).json({users});
+        })
+        .catch((error) => {
+            console.log("Error getting users" + error);
+            res.status(500).json({message: "Internal Server Error"});
+        })
+})
+
+//endpoint to send a request to a user
+app.post("/friend-request", async (req, res) => {
+    const {currentUserId, selectedUserId} = req.body;
+    try {
+        //update the recipient's friendRequestArray
+        await User.findByIdAndUpdate(selectedUserId, {
+            $push: {friendRequests: currentUserId}
+        })
+
+        //update the sender's friendRequestSentArray
+        await User.findByIdAndUpdate(currentUserId, {
+            $push: {sentFriendRequests: selectedUserId}
+        })
+
+        res.sendStatus(200);
+    } catch (error) {
+        res.sendStatus(500);
+    }
+});
+
+//endpoint to get all the friend requests of a user
+app.get("/friend-request/:userId", async (req, res) => {
+    try {
+        const {userId} = req.params;
+        //fetch the user document based on the UserId
+        const user = await User.findById(userId).populate("friendRequests", "name email image").lean();
+        const friendRequests = user.friendRequests;
+        res.json({friendRequests});
+    } catch (error) {
+        console.log("Error getting friend requests" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+});
