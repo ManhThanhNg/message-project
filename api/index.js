@@ -140,3 +140,29 @@ app.get("/friend-request/:userId", async (req, res) => {
         res.status(500).json({message: "Internal Server Error"});
     }
 });
+
+//endpoint to accept a friend-request user2user
+app.post("/friend-request/accept", async (req, res) => {
+    try {
+        const {senderId, recipientId} = req.body;
+        // retrieve the documents of sender and the recipient
+        const sender = await User.findById(senderId);
+        const recipient = await User.findById(recipientId);
+
+        //update the sender's friendList
+        sender.friends.push(recipientId)
+        sender.sentFriendRequests = sender.sentFriendRequests.filter(
+            (request) => request.toString() !== recipientId.toString())
+        //update the recipient's friendList
+        recipient.friends.push(recipientId)
+        recipient.friendRequests = recipient.friendRequests.filter(
+            (request) => request.toString() !== senderId.toString())
+
+        await sender.save();
+        await recipient.save();
+        res.status(200).json({message: "Friend Request Accepted Successfully"});
+    } catch (error) {
+        console.log("Error accepting friend request" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})

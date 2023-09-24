@@ -3,13 +3,14 @@ import {StyleSheet, Text, View} from 'react-native'
 import {UserType} from "../UserContext";
 import axios from "axios";
 import FriendsRequest from "../components/FriendsRequest";
+import {HOST} from "../config";
 
 const FriendsScreen = () => {
     const {userId, setUserId} = useContext(UserType);
     const [friendRequests, setFriendRequests] = useState([]);
     const fetchFriendRequest = async () => {
         try {
-            const response = await axios.get(`http://192.168.1.6:8000/friend-request/${userId}`)
+            const response = await axios.get(HOST +`/friend-request/${userId}`)
             if (response.status===200){
                 const friendRequestsData = response.data.friendRequests.map((friendRequest)=>({
                     _id: friendRequest._id,
@@ -34,8 +35,8 @@ const FriendsScreen = () => {
                 <FriendsRequest
                     key={index}
                     item={item}
-                    friendRequest={FriendsRequest}
-                    setFriendRequest={setFriendRequests}
+                    friendRequests={friendRequests}
+                    setFriendRequests={setFriendRequests}
                 />
             ))}
         </View>

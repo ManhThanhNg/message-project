@@ -1,6 +1,7 @@
 import React, {useContext, useState} from 'react'
 import {Image, Pressable, Text, View, StyleSheet} from 'react-native'
 import {UserType} from "../UserContext";
+import {HOST} from "../config";
 
 const User = ({item}) => {
     const {userId, setUserId} = useContext(UserType);
@@ -8,7 +9,7 @@ const User = ({item}) => {
 
     const sendFriendRequestTo = async (currentUserId, selectedUserId) => {
         try {
-            const response = await fetch("http://192.168.1.6:8000/friend-request", {
+            const response = await fetch(HOST+"/friend-request", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import jwt_decode from "jwt-decode";
 import axios from "axios";
 import User from "../components/User";
+import {HOST} from "../config";
 
 const HomeScreen = () => {
     const navigation = useNavigation();
@@ -38,7 +39,7 @@ const HomeScreen = () => {
             const userId = decodedToken.payload.userId;
             setUserId(userId);
 
-            axios.get(`http://192.168.1.6:8000/user/${userId}`).then((response) => {
+            axios.get(HOST+`/user/${userId}`).then((response) => {
                 setUsers(response.data.users);
             }).catch((error) => {
                 console.log("error retrieving users", error);

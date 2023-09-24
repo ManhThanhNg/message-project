@@ -10,6 +10,7 @@ import {
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import {HOST} from "../config";
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState("");
@@ -28,7 +29,7 @@ const RegisterScreen = () => {
     
 
     axios
-        .post("http://192.168.1.6:8000/register", user)
+        .post(HOST+"/register", user)
         .then((response) => {
             console.log(response.data);
             Alert.alert("Registration Successful", "You have registered successfully");

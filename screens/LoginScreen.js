@@ -3,35 +3,36 @@ import React, {useEffect, useState} from 'react'
 import {useNavigation} from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {HOST} from "../config";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigation = useNavigation();
-    useEffect(() => {
-        const checkLoginStatus = async () => {
-            try {
-                const token = await AsyncStorage.getItem("authToken");
-                if (token) {
-                    navigation.navigate("HomeScreen");
-                } else {
-                    // token not found, show the login screen
-                }
-            } catch (error) {
-                console.log("error:", error);
-            }
-        };
-        checkLoginStatus();
-    }, [])
+    // useEffect(() => {
+    //     const checkLoginStatus = async () => {
+    //         try {
+    //             const token = await AsyncStorage.getItem("authToken");
+    //             if (token) {
+    //                 navigation.navigate("HomeScreen");
+    //             } else {
+    //                 // token not found, show the login screen
+    //             }
+    //         } catch (error) {
+    //             console.log("error:", error);
+    //         }
+    //     };
+    //     checkLoginStatus();
+    // }, [])
     const handleLogin = () => {
         const user = {
             "email": email,
             "password": password,
         }
 
-        axios.post("http://192.168.1.6:8000/login", user)
+        axios.post(HOST + "/login", user)
             .then((response) => {
-            console.log(response);
+            // console.log(response);
             const token = response.data.token;
             AsyncStorage.setItem("authToken", token);
 
