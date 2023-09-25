@@ -166,3 +166,8 @@ app.post("/friend-request/accept", async (req, res) => {
         res.status(500).json({message: "Internal Server Error"});
     }
 })
+
+//endpoint to access all the friends of a user
+app.get("/accepted-friends/:userId",async (req,res)=>{
+    
+})
