@@ -168,6 +168,23 @@ app.post("/friend-request/accept", async (req, res) => {
 })
 
 //endpoint to access all the friends of a user
-app.get("/accepted-friends/:userId",async (req,res)=>{
-    
+app.get("/accepted-friends/:userId", async (req, res) => {
+    try {
+        const {userId} = req.params;
+        const users = await User.findById(userId).populate(
+            "friends",
+            "name email image"
+        )
+        const acceptedFriends = users.friends;
+        res.json(acceptedFriends);
+    } catch (error) {
+        console.log("Error Endpoint to access all the friends of a user: " + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
 })
+
+//endpoint to post a message
+// app.post("/message", async (req, res) => {
+//
+// }
+//endpoint to access all the messages between two users
