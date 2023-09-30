@@ -9,8 +9,8 @@ const UserChat = ({item}) => {
         <Pressable
             onPress={() => navigation.navigate("Message", {
                 recipientId: item._id,
-                recipientName: item.name,
-                recipientImage: item.image
+                // recipientName: item.name,
+                // recipientImage: item.image
             })}
             style={{
                 flexDirection: "row",

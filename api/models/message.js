@@ -5,15 +5,15 @@ const messageSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
         },
-        recepientId: {
+        recipientId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
         },
-        message: {
+        messageType: {
             type: String,
             enum: ['text', 'image'],
         },
-        message: String,
+        messageText: String,
         imageURL: String,
         timeStamps: {
             type: Date,

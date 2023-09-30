@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const mongoose = require('mongoose');
 const LocalStrategy = require('passport-local').Strategy;
+
 require('dotenv').config(); // This is how we read the variables stored in .env file
 
 const app = express(); // Initialize the app
@@ -17,13 +18,12 @@ app.use(passport.initialize()); // Used to initialize passport
 const jwt = require('jsonwebtoken');
 const {stringify} = require("nodemon/lib/utils"); // used to create, sign, and verify tokens
 
-mongoose.connect(process.env.DB_URI,
-    {
-        useNewUrlParser: true,  // These are added to remove deprecation warnings
-        useUnifiedTopology: true    // These are added to remove deprecation warnings
 
-    }
-).then(() => {
+mongoose.connect(process.env.DB_URI, {
+    useNewUrlParser: true,  // These are added to remove deprecation warnings
+    useUnifiedTopology: true    // These are added to remove deprecation warnings
+
+}).then(() => {
     console.log("Connected to Mongo DB");
 }).catch((err) => {
     console.log("Error connecting to MongoDB: ", err);
@@ -34,7 +34,8 @@ app.listen(port, () => {
 }); // Tell express to listen on port
 
 const User = require('./models/user'); // Import the user model
-const Message = require('./models/message'); // Import the message model
+const Message = require('./models/message');
+const multer = require("multer"); // Import the message model
 
 //endpoints for registeration of the user
 app.post("/register", (req, res) => {
@@ -95,7 +96,7 @@ app.post("/login", (req, res) => {
 })
 
 //endpoint to access all the users except the user who's is currently logged in
-app.get("/user/:userId", (req, res) => {
+app.get("/users/:userId", (req, res) => {
     const loggedInUserId = req.params.userId;
     User.find({_id: {$ne: loggedInUserId}})
         .then((users) => {
@@ -151,12 +152,10 @@ app.post("/friend-request/accept", async (req, res) => {
 
         //update the sender's friendList
         sender.friends.push(recipientId)
-        sender.sentFriendRequests = sender.sentFriendRequests.filter(
-            (request) => request.toString() !== recipientId.toString())
+        sender.sentFriendRequests = sender.sentFriendRequests.filter((request) => request.toString() !== recipientId.toString())
         //update the recipient's friendList
-        recipient.friends.push(recipientId)
-        recipient.friendRequests = recipient.friendRequests.filter(
-            (request) => request.toString() !== senderId.toString())
+        recipient.friends.push(senderId)
+        recipient.friendRequests = recipient.friendRequests.filter((request) => request.toString() !== senderId.toString())
 
         await sender.save();
         await recipient.save();
@@ -171,10 +170,7 @@ app.post("/friend-request/accept", async (req, res) => {
 app.get("/accepted-friends/:userId", async (req, res) => {
     try {
         const {userId} = req.params;
-        const users = await User.findById(userId).populate(
-            "friends",
-            "name email image"
-        )
+        const users = await User.findById(userId).populate("friends", "name email image")
         const acceptedFriends = users.friends;
         res.json(acceptedFriends);
     } catch (error) {
@@ -184,7 +180,61 @@ app.get("/accepted-friends/:userId", async (req, res) => {
 })
 
 //endpoint to post a message
-// app.post("/message", async (req, res) => {
-//
-// }
-//endpoint to access all the messages between two users
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'files/') // Specify the upload directory
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) // Create a unique file name
+        cb(null, uniqueSuffix + "-" + file.originalname)
+    }
+});
+const upload  = multer({storage:storage});
+app.post("/message", upload.single("imageFile"), async (req, res) => {
+    try {
+        const {senderId, recipientId, messageType, messageText} = req.body;
+        const newMessage = new Message({
+            senderId: senderId,
+            recipientId: recipientId,
+            messageType: messageType,
+            messageText: messageText,
+            timeStamps: new Date().getTime(),
+            imageUrl: messageType === "image",
+        })
+        await newMessage.save();
+        res.status(200).json({message: "Message sent successfully"});
+    } catch (error) {
+        console.log("Error posting a message" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})
+
+//endpoint to get the user details to design the chat Room header
+app.get("/user/:userId", async (req, res) => {
+    try {
+        const {userId} = req.params;
+        // fetch the user document based on the userId
+        const userDetails = await User.findById(userId);
+        res.status(200).json({name: userDetails.name, image:userDetails.image});
+    } catch (error) {
+        console.log("Error getting the user details" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})
+
+//endpoint to fetch all the messages between two users
+app.get("/messages/:senderId/:recipientId", async (req, res)=>{
+    try{
+        const {senderId, recipientId} = req.params;
+        const messages = await Message.find({
+            $or:[
+                {senderId: senderId, recipientId: recipientId},
+                {senderId: recipientId, recipientId: senderId}
+            ]
+        }).populate("senderId","_id name");
+        res.status(200).json({messages});
+    } catch (error) {
+        console.log("Error fetching all the messages between two users" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})

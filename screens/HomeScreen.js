@@ -39,7 +39,7 @@ const HomeScreen = () => {
             const userId = decodedToken.payload.userId;
             setUserId(userId);
 
-            axios.get(HOST+`/user/${userId}`).then((response) => {
+            axios.get(HOST+`/users/${userId}`).then((response) => {
                 setUsers(response.data.users);
             }).catch((error) => {
                 console.log("error retrieving users", error);
