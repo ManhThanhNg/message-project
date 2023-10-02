@@ -189,7 +189,7 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + "-" + file.originalname)
     }
 });
-const upload  = multer({storage:storage});
+const upload = multer({storage: storage});
 app.post("/message", upload.single("imageFile"), async (req, res) => {
     try {
         const {senderId, recipientId, messageType, messageText} = req.body;
@@ -199,7 +199,7 @@ app.post("/message", upload.single("imageFile"), async (req, res) => {
             messageType: messageType,
             messageText: messageText,
             timeStamps: new Date().getTime(),
-            imageUrl: messageType === "image",
+            imageURL: messageType === 'image' ? req.file.path : null
         })
         await newMessage.save();
         res.status(200).json({message: "Message sent successfully"});
@@ -208,14 +208,18 @@ app.post("/message", upload.single("imageFile"), async (req, res) => {
         res.status(500).json({message: "Internal Server Error"});
     }
 })
-
+//endpoint to get picture
+app.get("/image/:imagePath", (req, res) => {
+    const {imagePath} = req.params;
+    res.sendFile(__dirname + "/files/" + imagePath);
+})
 //endpoint to get the user details to design the chat Room header
 app.get("/user/:userId", async (req, res) => {
     try {
         const {userId} = req.params;
         // fetch the user document based on the userId
         const userDetails = await User.findById(userId);
-        res.status(200).json({name: userDetails.name, image:userDetails.image});
+        res.status(200).json({name: userDetails.name, image: userDetails.image});
     } catch (error) {
         console.log("Error getting the user details" + error);
         res.status(500).json({message: "Internal Server Error"});
@@ -223,18 +227,33 @@ app.get("/user/:userId", async (req, res) => {
 })
 
 //endpoint to fetch all the messages between two users
-app.get("/messages/:senderId/:recipientId", async (req, res)=>{
-    try{
+app.get("/messages/:senderId/:recipientId", async (req, res) => {
+    try {
         const {senderId, recipientId} = req.params;
         const messages = await Message.find({
-            $or:[
+            $or: [
                 {senderId: senderId, recipientId: recipientId},
                 {senderId: recipientId, recipientId: senderId}
             ]
-        }).populate("senderId","_id name");
+        }).populate("senderId", "_id name");
         res.status(200).json({messages});
     } catch (error) {
         console.log("Error fetching all the messages between two users" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})
+
+//endpoints to delte the message
+app.post("/delete-message", async (req, res) => {
+    try {
+        const {messageId} = req.body;
+        if (!Array.isArray(messageId) || messageId.length === 0) {
+            return res.status(400).json({message: "Invalid messageId"});
+        }
+        await Message.deleteMany({_id: {$in: messageId}});
+        res.status(200).json({message: "Message deleted successfully"});
+    } catch (error) {
+        console.log("Error deleting the message" + error);
         res.status(500).json({message: "Internal Server Error"});
     }
 })

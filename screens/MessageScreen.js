@@ -10,14 +10,16 @@ import {
     TextInput,
     View
 } from 'react-native'
-import {Entypo, Feather, Ionicons} from "@expo/vector-icons";
+import {AntDesign, Entypo, Feather, FontAwesome, Ionicons} from "@expo/vector-icons";
 import EmojiSelector from "react-native-emoji-selector";
 import {UserType} from "../UserContext";
 import {HOST} from "../config";
+import * as ImagePicker from 'expo-image-picker';
 
 const MessageScreen = ({navigation, route}) => {
     const [messages, setMessages] = useState([]); //all the messages
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [selectedMessage, setSelectedMessage] = useState([]); //the selected message
     const [messageInput, setMessageInput] = useState("");
     const {userId, setUserId} = useContext(UserType);
     const {recipientId} = route.params;
@@ -77,17 +79,38 @@ const MessageScreen = ({navigation, route}) => {
             const response = await fetch(HOST + "/message", {
                 method: "POST",
                 body: formData,
-
             })
             if (response.ok) {
                 setMessageInput("");
                 setSelectedImage("");
+                handleFetchMessages();
             }
         } catch (error) {
             console.log("Error sending the message: " + error);
         }
     }
-    console.log("messages:", messages)
+    console.log("selectedMessage:", selectedMessage.length)
+
+    const deleteMessage = async (selectedMessage) => {
+        try {
+            const response = await fetch(HOST + "/delete-message", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({messageId: selectedMessage}),
+            });
+            if (response.ok) {
+                setSelectedMessage([]);
+                handleFetchMessages();
+            } else {
+                console.log("Invalid delete request", response.status)
+            }
+        } catch (error) {
+            console.log("Error deleting the message: " + error)
+        }
+    }
+
     useLayoutEffect(() => {
         navigation.setOptions({
             headerTitle: "",
@@ -98,20 +121,54 @@ const MessageScreen = ({navigation, route}) => {
                             navigation.goBack();
                         }}
                         name="arrow-back" size={24} color="black"/>
-                    <View style={{flexDirection: "row", alignItems: "center"}}>
-                        <Image
-                            style={{width: 30, height: 30, borderRadius: 15, resizeMode: "cover"}}
-                            source={{uri: recipientData.image}}/>
-                        <Text style={{marginLeft: 5, fontSize: 15, fontWeight: "bold"}}>{recipientData.name}</Text>
-                    </View>
+                    {selectedMessage.length > 0 ? (
+                        <View>
+                            <Text style={{fontSize: 16, fontWeight: "bold"}}>{selectedMessage.length}</Text>
+                        </View>
+                    ) : (
+                        <View style={{flexDirection: "row", alignItems: "center"}}>
+                            <Image
+                                style={{width: 30, height: 30, borderRadius: 15, resizeMode: "cover"}}
+                                source={{uri: recipientData.image}}/>
+                            <Text style={{marginLeft: 5, fontSize: 15, fontWeight: "bold"}}>{recipientData?.name}</Text>
+                        </View>
+                    )}
                 </View>
-            )
+            ),
+            headerRight: () => selectedMessage.length > 0 ? (
+                <View style={{flexDirection: "row", alignItems: "center", gap: 10}}>
+                    <Ionicons name="md-arrow-redo-sharp" size={24} color="black"/>
+                    <Ionicons name="md-arrow-undo" size={24} color="black"/>
+                    <FontAwesome name="star" size={24} color="black"/>
+                    <AntDesign onPress={() => deleteMessage(selectedMessage)} name="delete" size={24} color="black"/>
+                </View>
+            ) : null
         })
-    }, [recipientData])
+    }, [recipientData, selectedMessage])
     const formatTime = (time) => {
         const options = {hour: "numeric", minute: "numeric"};
-        return new Date(time).toLocaleString("en-US",options);
+        return new Date(time).toLocaleString("en-US", options);
     }
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: false,
+            quality: 1,
+        });
+        if (!result.canceled) {
+            handleSend("image", result.assets[0].uri);
+        }
+    }
+
+    const handleSelectMessage = (message) => {
+        const isSelected = selectedMessage.includes(message._id);
+        if (isSelected) {
+            setSelectedMessage(prevSelectedMessage => prevSelectedMessage.filter((id) => id !== message._id))
+        } else
+            setSelectedMessage(prevSelectedMessage => [...prevSelectedMessage, message._id])
+
+    }
+
     return (
         <KeyboardAvoidingView
             style={{flex: 1, backgroundColor: "#F0F0F0"}}
@@ -119,9 +176,11 @@ const MessageScreen = ({navigation, route}) => {
         >
             <ScrollView>
                 {messages.map((item, index) => {
+                        const isSelected = selectedMessage.includes(item._id);
                         if (item.messageType === 'text') {
                             return (
                                 <Pressable
+                                    onLongPress={() => handleSelectMessage(item)}
                                     key={index}
                                     style={[
                                         item?.senderId._id === userId ?
@@ -130,7 +189,8 @@ const MessageScreen = ({navigation, route}) => {
                                                 backgroundColor: "#DCF8C6",
                                                 padding: 8,
                                                 maxWidth: "60%",
-                                                borderRadius: 7
+                                                borderRadius: 7,
+                                                margin: 10,
                                             } :
                                             {
                                                 alignSelf: "flex-start",
@@ -139,10 +199,61 @@ const MessageScreen = ({navigation, route}) => {
                                                 margin: 10,
                                                 borderRadius: 7,
                                                 maxWidth: "60%"
-                                            }
+                                            },
+                                        isSelected && {width: "100%", backgroundColor: "#F0FFFF"}
                                     ]}>
-                                    <Text style={{fontSize: 13}}>{item?.messageText}</Text>
-                                    <Text style={{textAlign:"center"}}>{formatTime(item.timeStamps)}</Text>
+                                    <Text style={{
+                                        fontSize: 13,
+                                        textAlign: isSelected ? "right" : "left"
+                                    }}>{item?.messageText}</Text>
+                                    <Text style={{
+                                        textAlign: "right",
+                                        fontSize: 9,
+                                        color: "gray",
+                                        marginTop: 5
+                                    }}>{formatTime(item.timeStamps)}</Text>
+                                </Pressable>
+                            )
+                        }
+                        if (item.messageType === 'image') {
+                            const baseUrl = HOST + "/image/";
+                            const imageUrl = item.imageURL;
+                            const filename = imageUrl.split("\\").pop();
+                            const imagePath = {uri: baseUrl + filename};
+                            return (
+                                <Pressable
+                                    onLongPress={() => handleSelectMessage(item)}
+                                    key={index}
+                                    style={[
+                                        item?.senderId._id === userId ?
+                                            {
+                                                alignSelf: "flex-end",
+                                                backgroundColor: "#DCF8C6",
+                                                padding: 8,
+                                                maxWidth: "60%",
+                                                borderRadius: 7,
+                                                margin: 10,
+                                            } :
+                                            {
+                                                alignSelf: "flex-start",
+                                                backgroundColor: "white",
+                                                padding: 8,
+                                                margin: 10,
+                                                borderRadius: 7,
+                                                maxWidth: "60%"
+                                            },
+                                        isSelected && {width: "100%", backgroundColor: "#F0FFFF"}
+                                    ]}>
+                                    <Image source={imagePath} style={{width: 200, height: 200, borderRadius: 7}}/>
+                                    <Text style={{
+                                        textAlign: "right",
+                                        fontSize: 9,
+                                        marginTop: 5,
+                                        position: "absolute",
+                                        color: "white",
+                                        right: 10,
+                                        bottom: 8,
+                                    }}>{formatTime(item.timeStamps)}</Text>
                                 </Pressable>
                             )
                         }
@@ -181,7 +292,11 @@ const MessageScreen = ({navigation, route}) => {
                     }}
                 />
                 <View style={{flexDirection: "row", alignItems: "center", gap: 7, marginHorizontal: 8}}>
-                    <Entypo name="camera" size={24} color="gray"/>
+                    <Entypo
+                        onPress={() => {
+                            pickImage()
+                        }}
+                        name="camera" size={24} color="gray"/>
                     <Feather name="mic" size={24} color="gray"/>
                 </View>
                 <Pressable
