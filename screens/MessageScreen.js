@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useLayoutEffect, useState} from 'react'
+import React, {useContext, useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {
     Image,
     KeyboardAvoidingView,
@@ -25,6 +25,21 @@ const MessageScreen = ({navigation, route}) => {
     const {recipientId} = route.params;
     const [selectedImage, setSelectedImage] = useState("");
     const [recipientData, setRecipientData] = useState({});
+
+    const scrollViewRef = useRef(null);
+
+    function scrollToBottom() {
+        if (scrollViewRef.current)
+            scrollViewRef.current.scrollToEnd({animated: false});
+    }
+
+    useEffect(() => {
+        scrollToBottom();
+    },[])
+
+    const handleContentSizeChange = ()=>{
+        scrollToBottom();
+    }
 
     function handleEmojiPicker() {
         setShowEmojiPicker(!showEmojiPicker);
@@ -89,7 +104,6 @@ const MessageScreen = ({navigation, route}) => {
             console.log("Error sending the message: " + error);
         }
     }
-    console.log("selectedMessage:", selectedMessage.length)
 
     const deleteMessage = async (selectedMessage) => {
         try {
@@ -169,12 +183,13 @@ const MessageScreen = ({navigation, route}) => {
 
     }
 
+    ;
     return (
         <KeyboardAvoidingView
             style={{flex: 1, backgroundColor: "#F0F0F0"}}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-            <ScrollView>
+            <ScrollView ref={scrollViewRef} contentContainerStyle={{flexGrow:1}} onContentSizeChange={handleContentSizeChange}>
                 {messages.map((item, index) => {
                         const isSelected = selectedMessage.includes(item._id);
                         if (item.messageType === 'text') {

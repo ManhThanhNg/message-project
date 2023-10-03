@@ -257,3 +257,34 @@ app.post("/delete-message", async (req, res) => {
         res.status(500).json({message: "Internal Server Error"});
     }
 })
+
+app.get("/friend-requests/sent/:userId", async (req, res)=>{
+    try{
+        const {userId} = req.params;
+        const user = await User.findById(userId).populate("sentFriendRequests", "name email image")
+        const sentFriendRequests = user.sentFriendRequests;
+        res.status(200).json(sentFriendRequests);
+    } catch (error) {
+        console.log("Error getting friend requests sent" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})
+
+app.get("/friends/:userId", async (req, res)=>{
+    try {
+        const {userId}= req.params;
+        User.findById(userId).populate("friends", "name email image").then((user)=>{
+            console.log("user", user)
+            if (!user)
+            {
+                return res.status(404).json({message: "User not found"})
+            }
+            const friendsIds = user.friends.map((friend)=>friend._id);
+            console.log("friendsIds", friendsIds);
+            res.status(200).json(friendsIds);
+        })
+    } catch (error) {
+        console.log("Error getting friends" + error);
+        res.status(500).json({message: "Internal Server Error"});
+    }
+})

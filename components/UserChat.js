@@ -23,15 +23,13 @@ const UserChat = ({item}) => {
     }
     useEffect(() => {
         handleFetchMessages();
-    })
+    },[])
 
     const getLastMessage = () => {
         const userMessages = messages.filter((message) => message.messageType === "text");
         return userMessages[userMessages.length - 1];
     };
     const lastMessage = getLastMessage();
-    console.log("lastMessage", lastMessage)
-
     const formatTime = (time) => {
         const options = {hour: "numeric", minute: "numeric"};
         return new Date(time).toLocaleString("en-US", options);
