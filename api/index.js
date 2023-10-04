@@ -1,3 +1,4 @@
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const passport = require('passport');
@@ -63,7 +64,6 @@ const createToken = (userId) => {
 //endpoints for login of the user
 app.post("/login", (req, res) => {
     const {email, password} = req.body;
-
     //check if the email and password are provided
     if (!email || !password) {
         return res.status(404).json({message: "Email and Password are required"});
@@ -274,13 +274,11 @@ app.get("/friends/:userId", async (req, res)=>{
     try {
         const {userId}= req.params;
         User.findById(userId).populate("friends", "name email image").then((user)=>{
-            console.log("user", user)
             if (!user)
             {
                 return res.status(404).json({message: "User not found"})
             }
             const friendsIds = user.friends.map((friend)=>friend._id);
-            console.log("friendsIds", friendsIds);
             res.status(200).json(friendsIds);
         })
     } catch (error) {
