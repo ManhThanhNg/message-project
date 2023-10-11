@@ -1,9 +1,9 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const mongoose = require('mongoose');
 const LocalStrategy = require('passport-local').Strategy;
+const http = require("http"); // Import the message model
 
 require('dotenv').config(); // This is how we read the variables stored in .env file
 
@@ -30,13 +30,30 @@ mongoose.connect(process.env.DB_URI, {
     console.log("Error connecting to MongoDB: ", err);
 }); // Connect mongoose to our database
 
-app.listen(port, () => {
-    console.log("Server listening on port " + port);
-}); // Tell express to listen on port
+const server = http.createServer(app);
+const {Server} = require("socket.io");
+const io = new Server(server, {
+    cors: {
+        origin: '*',
+    },
+})
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('messageTo', msg => {
+        console.log('messageTo' + msg);
+        io.emit(`${msg.recipientId}`, msg);
+    })
+})
+server.listen(port, () => {
+    console.log("Server is running on port: " + port);
+});
+
 
 const User = require('./models/user'); // Import the user model
 const Message = require('./models/message');
-const multer = require("multer"); // Import the message model
+const multer = require("multer");
+
 
 //endpoints for registeration of the user
 app.post("/register", (req, res) => {
@@ -213,6 +230,7 @@ app.get("/image/:imagePath", (req, res) => {
     const {imagePath} = req.params;
     res.sendFile(__dirname + "/files/" + imagePath);
 })
+
 //endpoint to get the user details to design the chat Room header
 app.get("/user/:userId", async (req, res) => {
     try {
@@ -258,8 +276,8 @@ app.post("/delete-message", async (req, res) => {
     }
 })
 
-app.get("/friend-requests/sent/:userId", async (req, res)=>{
-    try{
+app.get("/friend-requests/sent/:userId", async (req, res) => {
+    try {
         const {userId} = req.params;
         const user = await User.findById(userId).populate("sentFriendRequests", "name email image")
         const sentFriendRequests = user.sentFriendRequests;
@@ -270,15 +288,14 @@ app.get("/friend-requests/sent/:userId", async (req, res)=>{
     }
 })
 
-app.get("/friends/:userId", async (req, res)=>{
+app.get("/friends/:userId", async (req, res) => {
     try {
-        const {userId}= req.params;
-        User.findById(userId).populate("friends", "name email image").then((user)=>{
-            if (!user)
-            {
+        const {userId} = req.params;
+        User.findById(userId).populate("friends", "name email image").then((user) => {
+            if (!user) {
                 return res.status(404).json({message: "User not found"})
             }
-            const friendsIds = user.friends.map((friend)=>friend._id);
+            const friendsIds = user.friends.map((friend) => friend._id);
             res.status(200).json(friendsIds);
         })
     } catch (error) {

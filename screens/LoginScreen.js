@@ -17,21 +17,21 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
-  // useEffect(() => {
-  //     const checkLoginStatus = async () => {
-  //         try {
-  //             const token = await AsyncStorage.getItem("authToken");
-  //             if (token) {
-  //                 navigation.navigate("HomeScreen");
-  //             } else {
-  //                 // token not found, show the login screen
-  //             }
-  //         } catch (error) {
-  //             console.log("error:", error);
-  //         }
-  //     };
-  //     checkLoginStatus();
-  // }, [])
+  useEffect(() => {
+      const checkLoginStatus = async () => {
+          try {
+              const token = await AsyncStorage.getItem("authToken");
+              if (token) {
+                  navigation.navigate("HomeScreen");
+              } else {
+                  // token not found, show the login screen
+              }
+          } catch (error) {
+              console.log("error:", error);
+          }
+      };
+      checkLoginStatus();
+  }, [])
   const handleLogin = async () => {
     const user = {
       email: email,
