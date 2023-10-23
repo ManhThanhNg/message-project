@@ -6,17 +6,20 @@ import {
   Text,
   TextInput,
   View,
+  TouchableOpacity
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { HOST } from "../config";
+import { Ionicons } from "@expo/vector-icons";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
+  const [isShowPassword, setIsShowPassword] = useState(true);
+
   useEffect(() => {
       const checkLoginStatus = async () => {
           try {
@@ -37,38 +40,48 @@ const LoginScreen = () => {
       email: email,
       password: password,
     };
-    // try {
-    //   const response = await fetch(HOST + "/login", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-type": "application/json",
-    //     },
-    //     body: JSON.stringify(user),
-    //   });
-    //   data = await response.json();
-    //   if (data.token) {
-    //     AsyncStorage.setItem("authToken", data.token);
-    //     navigation.navigate("HomeScreen");
-    //   } else {
-    //     Alert.alert(
-    //       "Lỗi đăng nhập",
-    //       "Có lỗi xảy ra do thằng Thanh. Liên hệ nó."
-    //     );
-    //   }
-    // } catch (error) {
-    //   console.log("Login: " + error);
-    // }
-
-    axios.post(HOST + "/login", user)
-        .then((response) => {
-        const token = response.data.token;
-        AsyncStorage.setItem("authToken", token);
-
+    try {
+      const response = await fetch(HOST + "/login", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(user),
+      });
+      data = await response.json();
+      console.log("res status: " + response.status);
+      if (data.token) {
+        AsyncStorage.setItem("authToken", data.token);
         navigation.navigate("HomeScreen");
-    }).catch((error) => {
-        console.log(error);
-        Alert.alert("Lỗi đăng nhập", "Có lỗi xảy ra do thằng Thanh. Liên hệ nó.");
-    })
+      } else if (response.status === 401 || response.status === 404) {
+        Alert.alert(
+          "Lỗi đăng nhập",
+          "Thông tin đăng nhập không chính xác. Vui lòng thử lại"
+        );
+      } else {
+        Alert.alert(
+          "Lỗi đăng nhập",
+          "Có lỗi xảy ra do thằng Thanh. Liên hệ nó."
+        );
+      }
+    } catch (error) {
+      console.log("Login: " + error);
+    }
+
+    // axios.post(HOST + "/login", user)
+    //     .then((response) => {
+    //       console.log(response.status);
+    //     if (response.status(200)) {
+    //       const token = response.data.token;
+    //       AsyncStorage.setItem("authToken", token);
+    //       navigation.navigate("HomeScreen");
+    //     }else if(response.status(401) || response.status(404)){
+    //       Alert.alert("Lỗi đăng nhập", "Thông tin đăng nhập không chính xác. Vui lòng thử lại");
+    //     }
+    // }).catch((error) => {
+    //     console.log(error);
+    //     Alert.alert("Lỗi đăng nhập", "Có lỗi xảy ra do hệ thống. Liên hệ admin để được hỗ trợ");
+    // })
   };
   return (
     <View
@@ -79,7 +92,7 @@ const LoginScreen = () => {
         alignItems: "center",
       }}
     >
-      <KeyboardAvoidingView>
+      <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset="80">
         <View style={{ marginTop: 100, alignItems: "center" }}>
           <Text style={{ color: "#4A55A2", fontSize: 17, fontWeight: "600" }}>
             Sign In
@@ -94,7 +107,10 @@ const LoginScreen = () => {
             <Text>Email</Text>
             <TextInput
               value={email}
-              onChangeText={(text) => setEmail(text)}
+              keyboardType="email-address"
+              onChangeText={(text) => {
+                setEmail(text);
+              }}
               style={{
                 fontSize: email ? 18 : 18,
                 borderBottomColor: "gray",
@@ -111,7 +127,7 @@ const LoginScreen = () => {
             <TextInput
               value={password}
               onChangeText={(text) => setPassword(text)}
-              secureTextEntry={true}
+              secureTextEntry={isShowPassword}
               style={{
                 fontSize: password ? 18 : 18,
                 borderBottomColor: "gray",
@@ -122,6 +138,23 @@ const LoginScreen = () => {
               placeholderTextColor={"gray"}
               placeholder="Enter your password"
             />
+            <TouchableOpacity
+              style={{ position: "absolute", right: 0, bottom: 10 }}
+            >
+              {!isShowPassword ? 
+              <Ionicons
+                name="eye-off"
+                size={24}
+                color="black"
+                onPress={() => setIsShowPassword(!isShowPassword)}
+              /> : 
+              <Ionicons
+                name="eye"
+                size={24}
+                color="black"
+                onPress={() => setIsShowPassword(!isShowPassword)}
+              />}
+            </TouchableOpacity>
           </View>
           <Pressable>
             <Text

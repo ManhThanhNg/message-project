@@ -8,7 +8,6 @@ import React, {
 import {
   Image,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -72,13 +71,12 @@ const MessageScreen = ({ navigation, route }) => {
       console.log("Error fetching messages: " + error);
     }
   };
-  
+
   useEffect(() => {
     handleFetchMessages();
     socket.on(`${userId}`, (data) => {
-        
-        handleFetchMessages();
-      });
+      handleFetchMessages();
+    });
   }, []);
   useEffect(() => {
     //get the recipient data
@@ -93,7 +91,7 @@ const MessageScreen = ({ navigation, route }) => {
     };
     fetchRecipient();
   }, []);
-  const handleSend = async (messageType, imageUri) => {
+  const handleSend = async (messageType, imageUri, messageText) => {
     //handle sending the message
     try {
       const formData = new FormData();
@@ -110,20 +108,17 @@ const MessageScreen = ({ navigation, route }) => {
         });
       } else {
         formData.append("messageType", "text");
-        formData.append("messageText", messageInput);
+        formData.append("messageText", messageText);
       }
       const response = await fetch(HOST + "/message", {
         method: "POST",
         body: formData,
       });
       if (response.ok) {
-        setMessageInput("");
-        setSelectedImage("");
         socket.emit("messageTo", {
           recipientId: recipientId,
           message: messageInput,
         });
-        handleFetchMessages();
       }
     } catch (error) {
       console.log("Error sending the message: " + error);
@@ -234,7 +229,8 @@ const MessageScreen = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "#F0F0F0" }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="padding"
+      keyboardVerticalOffset="80"
     >
       <ScrollView
         ref={scrollViewRef}
@@ -298,6 +294,9 @@ const MessageScreen = ({ navigation, route }) => {
             return (
               <Pressable
                 onLongPress={() => handleSelectMessage(item)}
+                onPress={() => {
+                  navigation.navigate("ImageViewer", { imageUrl: imagePath });
+                }}
                 key={index}
                 style={[
                   item?.senderId._id === userId
@@ -399,7 +398,23 @@ const MessageScreen = ({ navigation, route }) => {
         <Pressable
           onPress={() => {
             if (messageInput) {
-              handleSend("text");
+              const newMessage = {
+                __v: 0,
+                _id: "tempId",
+                // imageURL: imageUri ? imageUri : null,
+                messageText: messageInput ? messageInput : null,
+                messageType: "text",
+                recipientId: recipientId,
+                senderId: {
+                  _id: userId,
+                  name: "tempName",
+                },
+                timeStamps: new Date().getTime(),
+              };
+              setMessages([...messages, newMessage]);
+              handleSend("text", "", messageInput);
+              setMessageInput("");
+              setSelectedImage("");
             }
           }}
           style={{

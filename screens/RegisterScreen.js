@@ -6,11 +6,13 @@ import {
   Text,
   TextInput,
   View,
+  TouchableOpacity,
 } from "react-native";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
-import {HOST} from "../config";
+import { HOST } from "../config";
+import { Ionicons } from "@expo/vector-icons";
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +20,7 @@ const RegisterScreen = () => {
   const [fullName, setFullName] = useState("");
   const [image, setImage] = useState("");
   const navigation = useNavigation();
+  const [isShowPassword, setIsShowPassword] = useState(true);
 
   const handleRegister = () => {
     const user = {
@@ -26,21 +29,27 @@ const RegisterScreen = () => {
       password: password,
       image: image,
     };
-    
 
     axios
-        .post(HOST+"/register", user)
-        .then((response) => {
-            console.log(response.data);
-            Alert.alert("Registration Successful", "You have registered successfully");
-            setFullName("");
-            setEmail("");
-            setPassword("");
-            setImage("");
-        }).catch((error) => {
+      .post(HOST + "/register", user)
+      .then((response) => {
+        console.log(response.data);
+        Alert.alert(
+          "Registration Successful",
+          "You have registered successfully"
+        );
+        setFullName("");
+        setEmail("");
+        setPassword("");
+        setImage("");
+      })
+      .catch((error) => {
         console.log(error);
-        Alert.alert("Registration Error", "An error occurred while registering. Please try again later.");
-    })
+        Alert.alert(
+          "Registration Error",
+          "An error occurred while registering. Please try again later."
+        );
+      });
   };
   return (
     <View
@@ -51,7 +60,7 @@ const RegisterScreen = () => {
         alignItems: "center",
       }}
     >
-      <KeyboardAvoidingView>
+      <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset="80">
         <View style={{ marginTop: 100, alignItems: "center" }}>
           <Text style={{ color: "#4A55A2", fontSize: 17, fontWeight: "600" }}>
             Register
@@ -81,6 +90,7 @@ const RegisterScreen = () => {
           <View>
             <Text>Email</Text>
             <TextInput
+              keyboardType="email-address"
               value={email}
               onChangeText={(text) => setEmail(text)}
               style={{
@@ -110,6 +120,23 @@ const RegisterScreen = () => {
               placeholderTextColor={"gray"}
               placeholder="Enter your password"
             />
+            <TouchableOpacity
+              style={{ position: "absolute", right: 0, bottom: 10 }}
+            >
+              {!isShowPassword ? 
+              <Ionicons
+                name="eye-off"
+                size={24}
+                color="black"
+                onPress={() => setIsShowPassword(!isShowPassword)}
+              /> : 
+              <Ionicons
+                name="eye"
+                size={24}
+                color="black"
+                onPress={() => setIsShowPassword(!isShowPassword)}
+              />}
+            </TouchableOpacity>
           </View>
           <View style={{ marginTop: 10 }}>
             <Text>Image</Text>

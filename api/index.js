@@ -40,6 +40,9 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
     console.log('a user connected');
+    socket.on('disconnect', () => {
+        console.log("User disconnected");
+    })
     socket.on('messageTo', msg => {
         console.log('messageTo' + msg);
         io.emit(`${msg.recipientId}`, msg);
