@@ -48,10 +48,10 @@ const LoginScreen = () => {
         },
         body: JSON.stringify(user),
       });
-      data = await response.json();
+      const data = await response.json();
       console.log("res status: " + response.status);
       if (data.token) {
-        AsyncStorage.setItem("authToken", data.token);
+        await AsyncStorage.setItem("authToken", data.token);
         navigation.navigate("HomeScreen");
       } else if (response.status === 401 || response.status === 404) {
         Alert.alert(

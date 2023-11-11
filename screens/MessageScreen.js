@@ -110,6 +110,22 @@ const MessageScreen = ({ navigation, route }) => {
         formData.append("messageType", "text");
         formData.append("messageText", messageText);
       }
+      setMessageInput("");
+      setSelectedImage("");
+      const newMessage = {
+        __v: 0,
+        _id: "tempId",
+        imageURL: imageUri ? imageUri : null,
+        messageText: messageText ? messageText : null,
+        messageType: messageType,
+        recipientId: recipientId,
+        senderId: {
+          _id: userId,
+          name: "tempName",
+        },
+        timeStamps: new Date().getTime(),
+      };
+      setMessages([...messages, newMessage]);
       const response = await fetch(HOST + "/message", {
         method: "POST",
         body: formData,
@@ -398,23 +414,7 @@ const MessageScreen = ({ navigation, route }) => {
         <Pressable
           onPress={() => {
             if (messageInput) {
-              const newMessage = {
-                __v: 0,
-                _id: "tempId",
-                // imageURL: imageUri ? imageUri : null,
-                messageText: messageInput ? messageInput : null,
-                messageType: "text",
-                recipientId: recipientId,
-                senderId: {
-                  _id: userId,
-                  name: "tempName",
-                },
-                timeStamps: new Date().getTime(),
-              };
-              setMessages([...messages, newMessage]);
               handleSend("text", "", messageInput);
-              setMessageInput("");
-              setSelectedImage("");
             }
           }}
           style={{
