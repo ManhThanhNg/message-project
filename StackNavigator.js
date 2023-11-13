@@ -18,7 +18,7 @@ const StackNavigator = () => {
                 <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}}/>
                 <Stack.Screen name="Register" component={RegisterScreen} options={{headerShown: false}}/>
                 <Stack.Screen name="HomeScreen" component={HomeScreen}/>
-                <Stack.Screen name="Friends" component={FriendsScreen}/>
+                <Stack.Screen name="Friends" component={FriendsScreen} options={{headerShown: true, title: "Yêu cầu kết bạn"}}/>
                 <Stack.Screen name="Chats" component={ChatsScreen}/>
                 <Stack.Screen name="Message" component={MessageScreen}/>
                 <Stack.Screen name="ImageViewer" component={ImageViewer}/>

@@ -39,8 +39,8 @@ const UserChat = ({item}) => {
         <Pressable
             onPress={() => navigation.navigate("Message", {
                 recipientId: item._id,
-                // recipientName: item.name,
-                // recipientImage: item.image
+                name: item.name,
+                image: HOST + "/image/" + item.image.split("\\").pop()
             })}
             style={{
                 flexDirection: "row",
@@ -55,7 +55,7 @@ const UserChat = ({item}) => {
             }}>
             <Image
                 style={{width: 50, height: 50, borderRadius: 25, resizeMode: "cover"}}
-                source={{uri: item?.image}}/>
+                source={{uri: item? HOST + "/image/" + item.image.split("\\").pop():null}}/>
             <View style={{flex: 1}}>
                 <Text style={{fontSize: 15, fontWeight: "500"}}>{item?.name}</Text>
                 {lastMessage && (

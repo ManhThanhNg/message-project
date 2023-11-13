@@ -37,7 +37,7 @@ const MessageScreen = ({ navigation, route }) => {
   const { userId, setUserId } = useContext(UserType);
   const { recipientId } = route.params;
   const [selectedImage, setSelectedImage] = useState("");
-  const [recipientData, setRecipientData] = useState({});
+  const recipientData = route.params;
 
   const scrollViewRef = useRef(null);
 
@@ -45,10 +45,6 @@ const MessageScreen = ({ navigation, route }) => {
     if (scrollViewRef.current)
       scrollViewRef.current.scrollToEnd({ animated: false });
   }
-
-  useEffect(() => {
-    scrollToBottom();
-  }, []);
 
   const handleContentSizeChange = () => {
     scrollToBottom();
@@ -71,25 +67,12 @@ const MessageScreen = ({ navigation, route }) => {
       console.log("Error fetching messages: " + error);
     }
   };
-
   useEffect(() => {
+    scrollToBottom();
     handleFetchMessages();
     socket.on(`${userId}`, (data) => {
       handleFetchMessages();
     });
-  }, []);
-  useEffect(() => {
-    //get the recipient data
-    const fetchRecipient = async () => {
-      try {
-        const response = await fetch(HOST + `/user/${recipientId}`);
-        const data = await response.json();
-        setRecipientData(data);
-      } catch (error) {
-        console.log("Error getting the recipient: " + error);
-      }
-    };
-    fetchRecipient();
   }, []);
   const handleSend = async (messageType, imageUri, messageText) => {
     //handle sending the message
@@ -168,6 +151,7 @@ const MessageScreen = ({ navigation, route }) => {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <Ionicons
             onPress={() => {
+              socket.disconnect();
               navigation.goBack();
             }}
             name="arrow-back"
@@ -303,10 +287,11 @@ const MessageScreen = ({ navigation, route }) => {
             );
           }
           if (item.messageType === "image") {
-            const baseUrl = HOST + "/image/";
-            const imageUrl = item.imageURL;
-            const filename = imageUrl.split("\\").pop();
-            const imagePath = { uri: baseUrl + filename };
+            // const baseUrl = HOST + "/image/"; //base url for the image
+            const imageUrl = item.imageURL; //image url
+            // const filename = imageUrl.split("\\").pop(); 
+            const imagePath = { uri: HOST + "/image/" + imageUrl.split("\\").pop() };
+            console.log(imagePath);
             return (
               <Pressable
                 onLongPress={() => handleSelectMessage(item)}
@@ -442,3 +427,4 @@ const MessageScreen = ({ navigation, route }) => {
 export default MessageScreen;
 
 const styles = StyleSheet.create({});
+

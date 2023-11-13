@@ -35,7 +35,7 @@ const FriendsRequest = ({item, friendRequests, setFriendRequests}) => {
         <Pressable
             style={{flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
             <Image
-                source={{uri: item.image}}
+                source={{uri: HOST + "/image/" + item.image.split("\\").pop()}}
                 style={{width: 50, height: 50, borderRadius: 25}}
             />
             <Text

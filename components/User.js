@@ -70,7 +70,7 @@ const User = ({item}) => {
                         borderRadius: 25,
                         resizeMode: "cover"
                     }}
-                    source={{uri: item.image}}
+                    source={{uri: HOST + "/image/" + item.image.split("\\").pop() }}
                 />
             </View>
 

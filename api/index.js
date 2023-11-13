@@ -55,18 +55,33 @@ server.listen(port, () => {
 
 const User = require('./models/user'); // Import the user model
 const Message = require('./models/message');
-const multer = require("multer");
 
+const multer = require("multer"); // Multer is a node.js middleware for handling multipart/form-data, which is primarily used for uploading files.
+const storage = multer.diskStorage({ // Create a storage location for the files
+    destination: function (req, file, cb) {
+        cb(null, 'files/') // Specify the upload directory
+    },
+    filename: function (req, file, cb) { // Specify the file name
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) // Create a unique file name
+        cb(null, uniqueSuffix + "-" + file.originalname)
+    }
+});
+const upload = multer({storage: storage}); // Create an upload object
 
 //endpoints for registeration of the user
-app.post("/register", (req, res) => {
-    const {name, email, password, image} = req.body; // Destructuring assignment
-    console.log(req.body);
-    //CREATE NEW USER OBJECT
+app.post("/register", upload.single("avatar"), async (req, res) => {
+    const {name, email, password} = req.body; // Destructuring assignment
+    // Create a new user object
     const newUser = new User({
-        name, email, password, image
+        name: name,
+        email: email,
+        password: password,
+        image: req.file.path,
     })
-
+    //check if the email and password are provided
+    if (!email || !password) {
+        return res.status(404).json({message: "Email and Password are required"});
+    }
     //Save the user to the database
     newUser.save().then(() => {
         console.log("User created successfully");
@@ -80,6 +95,7 @@ const createToken = (userId) => {
     const payload = {userId: userId}; // Create a payload
     return jwt.sign({payload}, process.env.SECRET_KEY, {expiresIn: '1h'}) // Sign the token with a secret key and a payload and define an expiration time
 }
+
 
 //endpoints for login of the user
 app.post("/login", (req, res) => {
@@ -200,16 +216,6 @@ app.get("/accepted-friends/:userId", async (req, res) => {
 })
 
 //endpoint to post a message
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'files/') // Specify the upload directory
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) // Create a unique file name
-        cb(null, uniqueSuffix + "-" + file.originalname)
-    }
-});
-const upload = multer({storage: storage});
 app.post("/message", upload.single("imageFile"), async (req, res) => {
     try {
         const {senderId, recipientId, messageType, messageText} = req.body;
@@ -228,6 +234,8 @@ app.post("/message", upload.single("imageFile"), async (req, res) => {
         res.status(500).json({message: "Internal Server Error"});
     }
 })
+
+
 //endpoint to get picture
 app.get("/image/:imagePath", (req, res) => {
     const {imagePath} = req.params;
