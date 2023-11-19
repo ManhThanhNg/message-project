@@ -36,3 +36,4 @@ yarn-error.*
 /.env
 api/.env
 /api/files/
+config.js
