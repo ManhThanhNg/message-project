@@ -1,6 +1,13 @@
 //reactNativeFunctionalExportComponentWithStyle
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { StyleSheet, Text, View, Image, Pressable } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Pressable,
+  ScrollView,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { UserType } from "../UserContext";
@@ -22,7 +29,9 @@ const HomeScreen = () => {
         headerTitle: "",
         headerLeft: () => (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 15 }}>
-            <Pressable onPress={() => navigation.navigate("UserProfile", userInfo)}>
+            <Pressable
+              onPress={() => navigation.navigate("UserProfile", userInfo)}
+            >
               <Image
                 source={{
                   uri: userInfo.image,
@@ -94,13 +103,13 @@ const HomeScreen = () => {
   }, []);
   // console.log("users", users);
   return (
-    <View>
-      <View style={{ padding: 10 }}>
-        {users.map((item, index) => (
-          <User key={index} item={item} />
-        ))}
-      </View>
-    </View>
+    <ScrollView 
+      contentContainerStyle={{ flexGrow: 1 }}    
+      >
+      {users.map((item, index) => (
+        <User key={index} item={item} />
+      ))}
+    </ScrollView>
   );
 };
 export default HomeScreen;

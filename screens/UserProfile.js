@@ -14,7 +14,7 @@ const UserProfile = ({ route }) => {
       headerTitle: userInfo.name,
       headerRight: () => (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 15 }}>
-          <Text style={{ fontSize: 23, fontWeight: "bold", color: "white" }}>
+          <Text style={{ fontSize: 20, color: "white" }}>
             Logout
           </Text>
           <Feather
@@ -35,10 +35,11 @@ const UserProfile = ({ route }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Image style={styles.headerImage} source={{ uri: userInfo.image }} />
-        <Text style={styles.headerText}>{userInfo.name}</Text>
+        <Text style={styles.headerText}> User Name: {userInfo.name}</Text>
       </View>
       <View style={styles.body}>
-        <Text style={styles.email}>{userInfo.email}</Text>
+        <Text style={styles.email}>Email: {userInfo.email}</Text>
+        <Text style={styles.email}>Phone: {userInfo.phone}</Text>
         {/* Add more user details here */}
       </View>
     </SafeAreaView>
@@ -48,26 +49,25 @@ const UserProfile = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#f2f2f2', // Light gray background
   },
   header: {
-    alignItems: "center",
-    paddingTop: 32,
-    paddingBottom: 16,
-    backgroundColor: "#4CAF50", // Green color, use your preferred color
+    alignItems: 'center',
+    paddingVertical: 32,
+    backgroundColor: '#3498db', // Blue color for the header
   },
   headerImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: '100%',
+    aspectRatio: 1, // This ensures that the image maintains its aspect ratio (1:1 for a circle)
+    borderRadius: 999, // A large value to create a circle
     borderWidth: 4,
-    borderColor: "#fff",
+    borderColor: '#fff',
   },
   headerText: {
-    marginTop: 8,
+    marginTop: 16,
     fontSize: 24,
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
   body: {
     flex: 1,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: 18,
-    color: "#333",
+    color: '#333',
     marginBottom: 16,
   },
 });

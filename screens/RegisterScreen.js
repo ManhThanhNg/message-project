@@ -53,7 +53,10 @@ const RegisterScreen = () => {
         body: user,
       });
       const result = await response.json();
-      console.log(result);
+      Alert.alert(
+        "Registration Success",
+        "Your account has been registered successfully!"
+      );
     } catch (error) {
       console.log(error);
       Alert.alert(
