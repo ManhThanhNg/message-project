@@ -248,7 +248,7 @@ app.get("/user/:userId", async (req, res) => {
         const {userId} = req.params;
         // fetch the user document based on the userId
         const userDetails = await User.findById(userId);
-        res.status(200).json({name: userDetails.name, image: userDetails.image});
+        res.status(200).json({name: userDetails.name, image: userDetails.image, email: userDetails.email});
     } catch (error) {
         console.log("Error getting the user details" + error);
         res.status(500).json({message: "Internal Server Error"});

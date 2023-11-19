@@ -8,6 +8,7 @@ import React, {
 import {
   Image,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -42,8 +43,7 @@ const MessageScreen = ({ navigation, route }) => {
   const scrollViewRef = useRef(null);
 
   function scrollToBottom() {
-    if (scrollViewRef.current)
-      scrollViewRef.current.scrollToEnd({ animated: false });
+    scrollViewRef.current?.scrollToEnd({ animated: true });
   }
 
   const handleContentSizeChange = () => {
@@ -68,7 +68,6 @@ const MessageScreen = ({ navigation, route }) => {
     }
   };
   useEffect(() => {
-    scrollToBottom();
     handleFetchMessages();
     socket.on(`${userId}`, (data) => {
       handleFetchMessages();
@@ -156,7 +155,7 @@ const MessageScreen = ({ navigation, route }) => {
             }}
             name="arrow-back"
             size={24}
-            color="black"
+            color="white"
           />
           {selectedMessage.length > 0 ? (
             <View>
@@ -175,7 +174,7 @@ const MessageScreen = ({ navigation, route }) => {
                 }}
                 source={{ uri: recipientData.image }}
               />
-              <Text style={{ marginLeft: 5, fontSize: 15, fontWeight: "bold" }}>
+              <Text style={{ marginLeft: 5, fontSize: 15, fontWeight: "bold", color:"white"}}>
                 {recipientData?.name}
               </Text>
             </View>
@@ -185,14 +184,14 @@ const MessageScreen = ({ navigation, route }) => {
       headerRight: () =>
         selectedMessage.length > 0 ? (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Ionicons name="md-arrow-redo-sharp" size={24} color="black" />
-            <Ionicons name="md-arrow-undo" size={24} color="black" />
-            <FontAwesome name="star" size={24} color="black" />
+            <Ionicons name="md-arrow-redo-sharp" size={24} color="white" />
+            <Ionicons name="md-arrow-undo" size={24} color="white" />
+            <FontAwesome name="star" size={24} color="white" />
             <AntDesign
               onPress={() => deleteMessage(selectedMessage)}
               name="delete"
               size={24}
-              color="black"
+              color="white"
             />
           </View>
         ) : null,
@@ -229,8 +228,8 @@ const MessageScreen = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "#F0F0F0" }}
-      behavior="padding"
-      keyboardVerticalOffset="80"
+      behavior={Platform.OS === "ios" ? "padding" : null}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <ScrollView
         ref={scrollViewRef}
@@ -289,9 +288,10 @@ const MessageScreen = ({ navigation, route }) => {
           if (item.messageType === "image") {
             // const baseUrl = HOST + "/image/"; //base url for the image
             const imageUrl = item.imageURL; //image url
-            // const filename = imageUrl.split("\\").pop(); 
-            const imagePath = { uri: HOST + "/image/" + imageUrl.split("\\").pop() };
-            console.log(imagePath);
+            // const filename = imageUrl.split("\\").pop();
+            const imagePath = {
+              uri: HOST + "/image/" + imageUrl.split("\\").pop(),
+            };
             return (
               <Pressable
                 onLongPress={() => handleSelectMessage(item)}
@@ -377,6 +377,9 @@ const MessageScreen = ({ navigation, route }) => {
           onChangeText={(text) => {
             setMessageInput(text);
           }}
+          onFocus={() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }}
         />
         <View
           style={{
@@ -427,4 +430,3 @@ const MessageScreen = ({ navigation, route }) => {
 export default MessageScreen;
 
 const styles = StyleSheet.create({});
-

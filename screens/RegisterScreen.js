@@ -120,7 +120,7 @@ const RegisterScreen = () => {
             <TextInput
               value={password}
               onChangeText={(text) => setPassword(text)}
-              secureTextEntry={true}
+              secureTextEntry={isShowPassword? true : false}
               style={{
                 fontSize: password ? 18 : 18,
                 borderBottomColor: "gray",
